@@ -1,7 +1,7 @@
 # PrestaShop WeArePlanet Integration
 This repository contains the PrestaShop WeArePlanet payment module that enables the shop to process payments with [WeArePlanet](https://www.weareplanet.com/).
 
-To install module manually by dragging up zip file, please download [.zip archive](https://plugin-documentation.weareplanet.com/weareplanet/prestashop/2.0.0/weareplanet.zip) of module with correct structure required by Prestashop installation
+To install module manually by dragging up zip file, please download [.zip archive](https://plugin-documentation.weareplanet.com/weareplanet/prestashop/2.0.1/weareplanet.zip) of module with correct structure required by Prestashop installation
 
 ##### To use this extension, a [WeArePlanet](https://www.weareplanet.com/contact/sales) account is required.
 
@@ -12,7 +12,7 @@ To install module manually by dragging up zip file, please download [.zip archiv
 
 ## Documentation
 
-* [English](https://plugin-documentation.weareplanet.com/weareplanet/prestashop/2.0.0/docs/en/documentation.html)
+* [English](https://plugin-documentation.weareplanet.com/weareplanet/prestashop/2.0.1/docs/en/documentation.html)
 
 ## Support
 
@@ -37,7 +37,7 @@ The Wallee integration for Prestashop 1.6 can be downloaded [here](https://githu
 
 ## License
 
-Please see the [license file](https://github.com/weareplanet/prestashop/blob/2.0.0/LICENSE) for more information.
+Please see the [license file](https://github.com/weareplanet/prestashop/blob/2.0.1/LICENSE) for more information.
 
 ## Other PrestaShop Versions
 
