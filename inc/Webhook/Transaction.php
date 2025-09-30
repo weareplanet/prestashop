@@ -145,9 +145,6 @@ class WeArePlanetWebhookTransaction extends WeArePlanetWebhookOrderrelatedabstra
 
     protected function failed(\WeArePlanet\Sdk\Model\Transaction $transaction, Order $sourceOrder)
     {
-        if (WeArePlanetHelper::getOrderMeta($sourceOrder, 'fulfill')) {
-            return;
-        }
         // Do not send email
         WeArePlanetBasemodule::startRecordingMailMessages();
         $errorStatusId = Configuration::get(WeArePlanetBasemodule::CK_STATUS_FAILED);
