@@ -32,7 +32,7 @@ class WeArePlanet extends PaymentModule
         $this->author = 'wallee AG';
         $this->bootstrap = true;
         $this->need_instance = 0;
-        $this->version = '1.0.12';
+        $this->version = '1.0.14';
         $this->displayName = 'WeArePlanet';
         $this->description = $this->l('This PrestaShop module enables to process payments with %s.');
         $this->description = sprintf($this->description, 'WeArePlanet');
@@ -121,10 +121,6 @@ class WeArePlanet extends PaymentModule
             'AdminWeArePlanetOrder' => array(
                 'parentId' => -1, // No Tab in navigation
                 'name' => 'WeArePlanet ' . $this->l('Order Management')
-            ),
-            'AdminWeArePlanetCronJobs' => array(
-                'parentId' => Tab::getIdFromClassName('AdminTools'),
-                'name' => 'WeArePlanet ' . $this->l('CronJobs')
             )
         );
     }
@@ -150,7 +146,6 @@ class WeArePlanet extends PaymentModule
         $output .= WeArePlanetBasemodule::handleSaveDownload($this);
         $output .= WeArePlanetBasemodule::handleSaveSpaceViewId($this);
         $output .= WeArePlanetBasemodule::handleSaveOrderStatus($this);
-        $output .= WeArePlanetBasemodule::handleSaveCronSettings($this);
         $output .= WeArePlanetBasemodule::displayHelpButtons($this);
         return $output . WeArePlanetBasemodule::displayForm($this);
     }
@@ -165,7 +160,6 @@ class WeArePlanet extends PaymentModule
             WeArePlanetBasemodule::getDocumentForm($this),
             WeArePlanetBasemodule::getSpaceViewIdForm($this),
             WeArePlanetBasemodule::getOrderStatusForm($this),
-            WeArePlanetBasemodule::getCronSettingsForm($this),
         );
     }
 
@@ -179,8 +173,7 @@ class WeArePlanet extends PaymentModule
             WeArePlanetBasemodule::getFeeItemConfigValues($this),
             WeArePlanetBasemodule::getDownloadConfigValues($this),
             WeArePlanetBasemodule::getSpaceViewIdConfigValues($this),
-            WeArePlanetBasemodule::getOrderStatusConfigValues($this),
-            WeArePlanetBasemodule::getCronSettingsConfigValues($this)
+            WeArePlanetBasemodule::getOrderStatusConfigValues($this)
         );
     }
 
@@ -348,11 +341,6 @@ class WeArePlanet extends PaymentModule
         }
     }
 
-    public function hookDisplayTop($params)
-    {
-        return  WeArePlanetBasemodule::hookDisplayTop($this, $params);
-    }
-
     public function hookActionAdminControllerSetMedia($arr)
     {
         WeArePlanetBasemodule::hookActionAdminControllerSetMedia($this, $arr);
@@ -369,10 +357,6 @@ class WeArePlanet extends PaymentModule
         return $backendController->access('edit');
     }
 
-    public function hookWeArePlanetCron($params)
-    {
-        return WeArePlanetBasemodule::hookWeArePlanetCron($params);
-    }
     /**
      * Show the manual task in the admin bar.
      * The output is moved with javascript to the correct place as better hook is missing.
@@ -382,7 +366,6 @@ class WeArePlanet extends PaymentModule
     public function hookDisplayAdminAfterHeader()
     {
         $result = WeArePlanetBasemodule::hookDisplayAdminAfterHeader($this);
-        $result .= WeArePlanetBasemodule::getCronJobItem($this);
         return $result;
     }
 

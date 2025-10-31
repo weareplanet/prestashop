@@ -6,10 +6,8 @@ $_MODULE['<{weareplanet}prestashop>weareplanet_2d44cfb0186c8f8b0357c3c2d396e466'
 $_MODULE['<{weareplanet}prestashop>weareplanet_af01f8c298aa063d9c7490f00eddd2df'] = 'Zahlungsarten';
 $_MODULE['<{weareplanet}prestashop>weareplanet_f28128b38efbc6134dc40751ee21fd29'] = 'Dokumente';
 $_MODULE['<{weareplanet}prestashop>weareplanet_c4dcb7da043e8feef88ce236dd7ab5bd'] = 'Bestellübersicht';
-$_MODULE['<{weareplanet}prestashop>weareplanet_60bb0e3fbb418c3b115759ec57e7c039'] = 'CronJobs';
 $_MODULE['<{weareplanet}prestashop>weareplanet_3abfe96726deefad1aa06f9a350f7925'] = 'Es gab ein Problem mit ihrem Warenkorb, einige Zahlungsmethoden stehen nicht zur Verfügung.';
 $_MODULE['<{weareplanet}prestashop>weareplanet_4ac6305a88d6c3a217ff9e53722c7db5'] = 'Es gab ein unerwartetes Problem, Sie können es nochmals versuchen oder eine andere Zahlart verwenden.';
-$_MODULE['<{weareplanet}prestashop>adminweareplanetcronjobscontroller_60bb0e3fbb418c3b115759ec57e7c039'] = 'CronJobs';
 $_MODULE['<{weareplanet}prestashop>adminweareplanetdocumentscontroller_b42cd3af71fc00ef268910709255320a'] = 'Sie haben keine Berechtigung dies einzusehen.';
 $_MODULE['<{weareplanet}prestashop>adminweareplanetdocumentscontroller_ac352e93d675dd67b70ba65bd33c43d1'] = 'Dokument konnte nicht eingeholt werden.';
 $_MODULE['<{weareplanet}prestashop>adminweareplanetdocumentscontroller_bb5522ddbf87e1cf496b6d45800387c2'] = 'Die Bestellnummer ist nicht vorhanden.';
@@ -205,14 +203,7 @@ $_MODULE['<{weareplanet}prestashop>transactionvoid_e49316b56d9fec6398032c59ef0f4
 $_MODULE['<{weareplanet}prestashop>admin_help_buttons_a501af4b300ed900587dc6424efe05de'] = 'Dieses Modul benötigt ein %s Konto.';
 $_MODULE['<{weareplanet}prestashop>admin_help_buttons_d67850bd126f070221dcfd5fa6317043'] = 'Anmelden';
 $_MODULE['<{weareplanet}prestashop>admin_help_buttons_5b6cf869265c13af8566f192b4ab3d2a'] = 'Dokumentation';
-$_MODULE['<{weareplanet}prestashop>list_60bb0e3fbb418c3b115759ec57e7c039'] = 'CronJobs';
-$_MODULE['<{weareplanet}prestashop>list_b718adec73e04ce3ec720dd11a06a308'] = 'ID';
-$_MODULE['<{weareplanet}prestashop>list_46a2a41cc6e552044816a2d04634545d'] = 'Status';
-$_MODULE['<{weareplanet}prestashop>list_2b7dabba0077abe3732e0418b048a56b'] = 'Geplant';
-$_MODULE['<{weareplanet}prestashop>list_8428552d86c0d262a542a528af490afa'] = 'Gestartet';
-$_MODULE['<{weareplanet}prestashop>list_8f3d10eb21bd36347c258679eba9e92b'] = 'Abgeschlossen';
-$_MODULE['<{weareplanet}prestashop>list_4c2a8fe7eaf24721cc7a9f0175115bd4'] = 'Nachricht';
-$_MODULE['<{weareplanet}prestashop>list_6a1f70fbe4c48508633dfa998294645b'] = 'Noch kein Cron verfügbar.';
+
 $_MODULE['<{weareplanet}prestashop>admin_after_header_c3798a64b0d1f21bb2a35e922bc552b3'] = 'Es gibt %s manuelle Tasks, die Ihre Aufmerksamkeit benötigen.';
 $_MODULE['<{weareplanet}prestashop>admin_after_header_46d159391a9c4ae7f1b5befe4304270a'] = 'Es gibt eine manuellen Task, der Ihre Aufmerksamkeit erfordert.';
 $_MODULE['<{weareplanet}prestashop>admin_after_header_a291881c33b8a6dddf4b4f434b07797f'] = 'Es gibt keine manuellen Aufgaben.';
