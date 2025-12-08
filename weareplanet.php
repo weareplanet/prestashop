@@ -32,7 +32,7 @@ class WeArePlanet extends PaymentModule
         $this->author = 'wallee AG';
         $this->bootstrap = true;
         $this->need_instance = 0;
-        $this->version = '1.0.14';
+        $this->version = '1.0.15';
         $this->displayName = 'WeArePlanet';
         $this->description = $this->l('This PrestaShop module enables to process payments with %s.');
         $this->description = sprintf($this->description, 'WeArePlanet');
@@ -192,9 +192,9 @@ class WeArePlanet extends PaymentModule
         }
         $cart = $params['cart'];
         try {
-            $possiblePaymentMethods = WeArePlanetServiceTransaction::instance()->getPossiblePaymentMethods(
-                $cart
-            );
+            $transactionService = WeArePlanetServiceTransaction::instance();
+            $transaction = $transactionService->getTransactionFromCart($cart);
+            $possiblePaymentMethods = $transactionService->getPossiblePaymentMethods($cart, $transaction);
         } catch (WeArePlanetExceptionInvalidtransactionamount $e) {
             PrestaShopLogger::addLog($e->getMessage() . " CartId: " . $cart->id, 2, null, 'WeArePlanet');
             $paymentOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
@@ -221,18 +221,7 @@ class WeArePlanet extends PaymentModule
         }
         $shopId = $cart->id_shop;
         $language = Context::getContext()->language->language_code;
-        $methods = array();
-        foreach ($possiblePaymentMethods as $possible) {
-            $methodConfiguration = WeArePlanetModelMethodconfiguration::loadByConfigurationAndShop(
-                $possible->getSpaceId(),
-                $possible->getId(),
-                $shopId
-            );
-            if (!$methodConfiguration->isActive()) {
-                continue;
-            }
-            $methods[] = $methodConfiguration;
-        }
+        $methods = $this->filterShopMethodConfigurations($shopId, $possiblePaymentMethods);
         $result = array();
 
         $this->context->smarty->registerPlugin(
@@ -275,67 +264,146 @@ class WeArePlanet extends PaymentModule
         return $result;
     }
 
-    public function hookActionFrontControllerSetMedia($arr)
+    /**
+     * Filters configured method entities for the current shop and the available SDK payment methods.
+     *
+     * @param int $shopId
+     * @param \WeArePlanet\Sdk\Model\PaymentMethodConfiguration[] $possiblePaymentMethods
+     * @return WeArePlanetModelMethodconfiguration[]
+     */
+    protected function filterShopMethodConfigurations($shopId, array $possiblePaymentMethods)
     {
-        if ($this->context->controller->php_self == 'order' || $this->context->controller->php_self == 'cart') {
-            $uniqueId = $this->context->cookie->pln_device_id;
-            if ($uniqueId == false) {
-                $uniqueId = WeArePlanetHelper::generateUUID();
-                $this->context->cookie->pln_device_id = $uniqueId;
-            }
-            $scriptUrl = WeArePlanetHelper::getBaseGatewayUrl() . '/s/' . Configuration::get(
-                WeArePlanetBasemodule::CK_SPACE_ID
-            ) . '/payment/device.js?sessionIdentifier=' . $uniqueId;
-            $this->context->controller->registerJavascript(
-                'weareplanet-device-identifier',
-                $scriptUrl,
-                array(
-                    'server' => 'remote',
-                    'attributes' => 'async="async"'
-                )
-            );
+        $configured = WeArePlanetModelMethodconfiguration::loadValidForShop($shopId);
+        if (empty($configured) || empty($possiblePaymentMethods)) {
+            return array();
         }
-        if ($this->context->controller->php_self == 'order') {
-            $this->context->controller->registerStylesheet(
-                'weareplanet-checkut-css',
-                'modules/' . $this->name . '/views/css/frontend/checkout.css'
-            );
-            $this->context->controller->registerJavascript(
-                'weareplanet-checkout-js',
-                'modules/' . $this->name . '/views/js/frontend/checkout.js'
-            );
-            Media::addJsDef(
-                array(
-                    'weArePlanetCheckoutUrl' => $this->context->link->getModuleLink(
-                        'weareplanet',
-                        'checkout',
-                        array(),
-                        true
-                    ),
-                    'weareplanetMsgJsonError' => $this->l(
-                        'The server experienced an unexpected error, you may try again or try to use a different payment method.'
-                    )
-                )
-            );
-            if (isset($this->context->cart) && Validate::isLoadedObject($this->context->cart)) {
-                try {
-                    $jsUrl = WeArePlanetServiceTransaction::instance()->getJavascriptUrl($this->context->cart);
-                    $this->context->controller->registerJavascript(
-                        'weareplanet-iframe-handler',
-                        $jsUrl,
-                        array(
-                            'server' => 'remote',
-                            'priority' => 45,
-                            'attributes' => 'id="weareplanet-iframe-handler"'
-                        )
-                    );
-                } catch (Exception $e) {
+
+        $bySpaceAndConfiguration = array();
+        foreach ($configured as $methodConfiguration) {
+            $spaceId = $methodConfiguration->getSpaceId();
+            if (! isset($bySpaceAndConfiguration[$spaceId])) {
+                $bySpaceAndConfiguration[$spaceId] = array();
+            }
+            $bySpaceAndConfiguration[$spaceId][$methodConfiguration->getConfigurationId()] = $methodConfiguration;
+        }
+
+        $result = array();
+        foreach ($possiblePaymentMethods as $possible) {
+            $spaceId = $possible->getSpaceId();
+            $configurationId = $possible->getId();
+            if (isset($bySpaceAndConfiguration[$spaceId][$configurationId])) {
+                $methodConfiguration = $bySpaceAndConfiguration[$spaceId][$configurationId];
+                if ($methodConfiguration->isActive()) {
+                    $result[] = $methodConfiguration;
                 }
             }
         }
-        if ($this->context->controller->php_self == 'order-detail') {
-            $this->context->controller->registerJavascript(
+
+        return $result;
+    }
+
+    public function hookActionFrontControllerSetMedia()
+    {
+        $controller = $this->context->controller;
+
+        if (!$controller) {
+            return;
+        }
+
+        $phpSelf = $controller->php_self;
+        if ($phpSelf === 'order' || $phpSelf === 'cart') {
+
+            // Ensure device ID exists
+            if (empty($this->context->cookie->pln_device_id)) {
+                $this->context->cookie->pln_device_id = WeArePlanetHelper::generateUUID();
+            }
+
+            $deviceId = $this->context->cookie->pln_device_id;
+
+            $scriptUrl = WeArePlanetHelper::getBaseGatewayUrl() .
+                '/s/' . Configuration::get(WeArePlanetBasemodule::CK_SPACE_ID) .
+                '/payment/device.js?sessionIdentifier=' . $deviceId;
+
+            $controller->registerJavascript(
+                'weareplanet-device-identifier',
+                $scriptUrl,
+                [
+                'server' => 'remote',
+                'attributes' => 'async'
+                ]
+            );
+        }
+
+        /**
+         * ORDER PAGE ONLY
+         * Add checkout JS/CSS + iframe handler
+         */
+        if ($phpSelf === 'order') {
+
+            // checkout styles
+            $controller->registerStylesheet(
+                'weareplanet-checkout-css',
+                'modules/' . $this->name . '/views/css/frontend/checkout.css'
+            );
+
+            // checkout JS
+            $controller->registerJavascript(
                 'weareplanet-checkout-js',
+                'modules/' . $this->name . '/views/js/frontend/checkout.js'
+            );
+
+            // define global JS variables
+            Media::addJsDef([
+                'weArePlanetCheckoutUrl' => $this->context->link->getModuleLink(
+                'weareplanet',
+                'checkout',
+                [],
+                true
+                ),
+                'weareplanetMsgJsonError' => $this->l(
+                'The server experienced an unexpected error, you may try again or try a different payment method.'
+                )
+            ]);
+
+            // Iframe handler JS (only when integration = iframe)
+            $cart = $this->context->cart;
+
+            if ($cart && Validate::isLoadedObject($cart)) {
+                try {
+                    // Get integration type from configuration
+                    // 0 = iframe
+                    // 1 = payment page
+                    $integrationType = (int) Configuration::get(WeArePlanetBasemodule::CK_INTEGRATION);
+
+                    // Only load JS when NOT payment page
+                    if ($integrationType !== 1) {
+
+                        $jsUrl = WeArePlanetServiceTransaction::instance()
+                            ->getJavascriptUrl($cart);
+
+                        $this->context->controller->registerJavascript(
+                            'weareplanet-iframe-handler',
+                            $jsUrl,
+                            [
+                            'server' => 'remote',
+                            'priority' => 45,
+                            'attributes' => 'id="weareplanet-iframe-handler"'
+                            ]
+                        );
+                    }
+
+                } catch (Exception $e) {
+                    // same behavior: silently ignore
+                }
+            }
+        }
+
+        /**
+         * ORDER-DETAIL PAGE
+         */
+        if ($phpSelf === 'order-detail') {
+            $controller->registerJavascript(
+                'weareplanet-orderdetail-js',
                 'modules/' . $this->name . '/views/js/frontend/orderdetail.js'
             );
         }
