@@ -5,7 +5,7 @@
  * This Prestashop module enables to process payments with WeArePlanet (https://www.weareplanet.com/).
  *
  * @author customweb GmbH (http://www.customweb.com/)
- * @copyright 2017 - 2025 customweb GmbH
+ * @copyright 2017 - 2026 customweb GmbH
  * @license http://www.apache.org/licenses/LICENSE-2.0 Apache Software License (ASL 2.0)
  */
 
@@ -195,6 +195,8 @@ class WeArePlanetServiceWebhook extends WeArePlanetServiceAbstract
         $webhookListener->setState(\WeArePlanet\Sdk\Model\CreationEntityState::ACTIVE);
         $webhookListener->setUrl($webhookUrl->getId());
         $webhookListener->setNotifyEveryChange($entity->isNotifyEveryChange());
+        $webhookListener->setEnablePayloadSignatureAndState(true);
+
         return $this->getWebhookListenerService()->create($spaceId, $webhookListener);
     }
 
