@@ -87,7 +87,8 @@ class WeArePlanetWebhookTransaction extends WeArePlanetWebhookOrderrelatedabstra
             $order->setCurrentState($authorizedStatusId);
             $order->save();
         }
-        WeArePlanetBasemodule::stopRecordingMailMessages();
+        $recordedMessages = WeArePlanetBasemodule::stopRecordingMailMessages();
+        WeArePlanetHelper::storeDeferredEmails($recordedMessages, $sourceOrder);
         if (Configuration::get(WeArePlanetBasemodule::CK_MAIL, null, null, $sourceOrder->id_shop)) {
             // Send stored messages
             $messages = WeArePlanetHelper::getOrderEmails($sourceOrder);
@@ -121,7 +122,8 @@ class WeArePlanetWebhookTransaction extends WeArePlanetWebhookOrderrelatedabstra
                 $order->save();
             }
         }
-        WeArePlanetBasemodule::stopRecordingMailMessages();
+        $recordedMessages = WeArePlanetBasemodule::stopRecordingMailMessages();
+        WeArePlanetHelper::storeDeferredEmails($recordedMessages, $sourceOrder);
         WeArePlanetServiceTransaction::instance()->updateTransactionInfo($transaction, $sourceOrder);
     }
 
@@ -141,6 +143,7 @@ class WeArePlanetWebhookTransaction extends WeArePlanetWebhookOrderrelatedabstra
         }
         WeArePlanetBasemodule::stopRecordingMailMessages();
         WeArePlanetServiceTransaction::instance()->updateTransactionInfo($transaction, $sourceOrder);
+        WeArePlanetHelper::deleteOrderEmails($order, WeArePlanetBasemodule::EMAIL_KEY_DOWNLOAD);
     }
 
     protected function failed(\WeArePlanet\Sdk\Model\Transaction $transaction, Order $sourceOrder)
@@ -157,6 +160,7 @@ class WeArePlanetWebhookTransaction extends WeArePlanetWebhookOrderrelatedabstra
         WeArePlanetBasemodule::stopRecordingMailMessages();
         WeArePlanetHelper::deleteOrderEmails($sourceOrder);
         WeArePlanetServiceTransaction::instance()->updateTransactionInfo($transaction, $sourceOrder);
+        WeArePlanetHelper::deleteOrderEmails($order, WeArePlanetBasemodule::EMAIL_KEY_DOWNLOAD);
     }
 
     protected function fulfill(\WeArePlanet\Sdk\Model\Transaction $transaction, Order $sourceOrder)
@@ -178,6 +182,7 @@ class WeArePlanetWebhookTransaction extends WeArePlanetWebhookOrderrelatedabstra
         }
         WeArePlanetBasemodule::stopRecordingMailMessages();
         WeArePlanetServiceTransaction::instance()->updateTransactionInfo($transaction, $sourceOrder);
+        WeArePlanetHelper::sendDeferredEmails($sourceOrder);
     }
 
     protected function voided(\WeArePlanet\Sdk\Model\Transaction $transaction, Order $sourceOrder)
@@ -195,5 +200,6 @@ class WeArePlanetWebhookTransaction extends WeArePlanetWebhookOrderrelatedabstra
         }
         WeArePlanetBasemodule::stopRecordingMailMessages();
         WeArePlanetServiceTransaction::instance()->updateTransactionInfo($transaction, $sourceOrder);
+        WeArePlanetHelper::deleteOrderEmails($order, WeArePlanetBasemodule::EMAIL_KEY_DOWNLOAD);
     }
 }
